@@ -417,3 +417,136 @@ async function getUser(userId) {
 
 }
 
+/*
+13. getPostComments
+a. Receives a post id as a parameter
+b. Fetches comments for a specific post id from:
+https://jsonplaceholder.typicode.com/ (look at Routes section)
+c. Should be an async function
+d. Should utilize a try / catch block
+e. Uses the fetch API to request all comments for a specific post id
+f. Await the users data response
+g. Return the JSON data
+NOTE: The next functions will depend on the async API data functions we just created.
+Therefore, these functions will also need to be async. When they call the API functions, they will
+need to await data from those functions.
+14. displayComments
+a. Dependencies: getPostComments, createComments
+b. Is an async function
+c. Receives a postId as a parameter
+d. Creates a section element with document.createElement()
+e. Sets an attribute on the section element with section.dataset.postId
+f. Adds the classes 'comments' and 'hide' to the section element
+g. Creates a variable comments equal to the result of await
+getPostComments(postId);
+h. Creates a variable named fragment equal to createComments(comments)
+i. Append the fragment to the section
+j. Return the section element
+15. createPosts
+a. Dependencies: createElemWithText, getUser, displayComments
+b. Is an async function
+c. Receives posts JSON data as a parameter
+d. Create a fragment element with document.createDocumentFragment()
+e. Loops through the posts data
+f. For each post do the following:
+g. Create an article element with document.createElement()
+h. Create an h2 element with the post title
+i. Create an p element with the post body
+j. Create another p element with text of `Post ID: ${post.id}`
+k. Define an author variable equal to the result of await getUser(post.userId)
+l. Create another p element with text of `Author: ${author.name} with
+${author.company.name}`
+m. Create another p element with the author’s company catch phrase.
+n. Create a button with the text 'Show Comments'
+o. Set an attribute on the button with button.dataset.postId = post.id
+p. Append the h2, paragraphs, button, and section elements you have created to
+the article element.
+q. Create a variable named section equal to the result of await
+displayComments(post.id);
+r. Append the section element to the article element
+s. After the loop completes, append the article element to the fragment
+t. Return the fragment element
+16. displayPosts
+a. Dependencies: createPosts, createElemWithText
+b. Is an async function
+c. Receives posts data as a parameter
+d. Selects the main element
+e. Defines a variable named element that is equal to:
+i. IF posts exist: the element returned from await createPosts(posts)
+ii. IF post data does not exist: create a paragraph element that is identical to
+the default paragraph found in the html file.
+iii. Optional suggestion: use a ternary for this conditional
+f. Appends the element to the main element
+g. Returns the element variable
+NOTE: This is the last group of functions. I call them “procedural functions” because they exist
+to pull the other functions together in a sequence of operations that allows the web app to
+function as it should. This means their sole purpose is to call dependencies with the correct data
+in the proper order.
+17. toggleComments
+a. Dependencies: toggleCommentSection, toggleCommentButton
+b. Receives 2 parameters: (see addButtonListeners function description)
+i. The event from the click event listener is the 1st param
+ii. Receives a postId as the 2nd parameter
+c. Sets event.target.listener = true (I need this for testing to be accurate)
+d. Passes the postId parameter to toggleCommentSection()
+e. toggleCommentSection result is a section element
+f. Passes the postId parameter to toggleCommentButton()
+g. toggleCommentButton result is a button
+h. Return an array containing the section element returned from
+toggleCommentSection and the button element returned from
+toggleCommentButton: [section, button]
+18. refreshPosts
+a. Dependencies: removeButtonListeners, deleteChildElements, displayPosts,
+addButtonListeners
+b. Is an async function
+c. Receives posts JSON data as a parameter
+d. Call removeButtonListeners
+e. Result of removeButtonListeners is the buttons returned from this function
+f. Call deleteChildElements with the main element passed in as the parameter
+g. Result of deleteChildElements is the return of the main element
+h. Passes posts JSON data to displayPosts and awaits completion
+i. Result of displayPosts is a document fragment
+j. Call addButtonListeners
+k. Result of addButtonListeners is the buttons returned from this function
+l. Return an array of the results from the functions called: [removeButtons, main,
+fragment, addButtons]
+19. selectMenuChangeEventHandler
+a. Dependencies: getUserPosts, refreshPosts
+b. Should be an async function
+c. Automatically receives the event as a parameter (see cheatsheet)
+d. Disables the select menu when called into action (disabled property)
+e. Defines userId = event.target.value || 1; (see cheatsheet)
+f. Passes the userId parameter to await getUserPosts
+g. Result is the posts JSON data
+h. Passes the posts JSON data to await refreshPosts
+i. Result is the refreshPostsArray
+j. Enables the select menu after results are received (disabled property)
+k. Return an array with the userId, posts and the array returned from refreshPosts:
+[userId, posts, refreshPostsArray]
+20. initPage
+a. Dependencies: getUsers, populateSelectMenu
+b. Should be an async function
+c. No parameters.
+d. Call await getUsers
+e. Result is the users JSON data
+f. Passes the users JSON data to the populateSelectMenu function
+g. Result is the select element returned from populateSelectMenu
+h. Return an array with users JSON data from getUsers and the select element
+result from populateSelectMenu: [users, select]
+21. initApp
+a. Dependencies: initPage, selectMenuChangeEventHandler
+b. Call the initPage() function.
+c. Select the #selectMenu element by id
+d. Add an event listener to the #selectMenu for the “change” event
+e. The event listener should call selectMenuChangeEventHandler when the change
+event fires for the #selectMenu
+f. NOTE: All of the above needs to be correct for your app to function correctly.
+However, I can only test if the initApp function exists. It does not return anything.
+NOTE: There is one last step to get your app to function correctly. I cannot test for this, but you
+must apply it to call the script into action.
+*** This must be underneath the definition of initApp in your file.
+1. Add an event listener to the document.
+2. Listen for the “DOMContentLoaded” event.
+3. Put initApp in the listener as the event handler function.
+4. This will call initApp after the DOM content has loaded and your app will be started.
+*/
