@@ -430,6 +430,31 @@ g. Return the JSON data
 NOTE: The next functions will depend on the async API data functions we just created.
 Therefore, these functions will also need to be async. When they call the API functions, they will
 need to await data from those functions.
+*/
+
+
+async function getPostComments(postId) {
+
+    if (!postId) return;
+
+    try {
+
+        const response = await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${postId}`);
+
+        const data = await response.json();
+
+        return data;
+
+    } catch (error) {
+
+        console.error('Error fetching post comments:', error);
+
+    }
+
+}
+
+
+/*
 14. displayComments
 a. Dependencies: getPostComments, createComments
 b. Is an async function
@@ -442,6 +467,31 @@ getPostComments(postId);
 h. Creates a variable named fragment equal to createComments(comments)
 i. Append the fragment to the section
 j. Return the section element
+*/
+
+
+async function displayComments(postId) {
+
+    if (!postId) return;
+
+    const section = document.createElement('section');
+
+    section.dataset.postId = postId;
+
+    section.classList.add('comments', 'hide');
+
+    const comments = await getPostComments(postId);
+
+    const fragment = createComments(comments);
+
+    section.appendChild(fragment);
+
+    return section;
+
+}
+
+
+/*
 15. createPosts
 a. Dependencies: createElemWithText, getUser, displayComments
 b. Is an async function
@@ -466,6 +516,51 @@ displayComments(post.id);
 r. Append the section element to the article element
 s. After the loop completes, append the article element to the fragment
 t. Return the fragment element
+*/
+
+
+async function createPosts(posts) {
+
+    if (!posts) return;
+
+    const fragment = document.createDocumentFragment();
+
+    for (const post of posts) {
+
+        const article = document.createElement('article');
+
+
+        const h2 = createElemWithText('h2', post.title);
+
+        const p1 = createElemWithText('p', post.body);
+
+        const p2 = createElemWithText('p', `Post ID: ${post.id}`);
+
+
+        const author = await getUser(post.userId);
+
+        const p3 = createElemWithText('p', `Author: ${author.name} with ${author.company.name}`);
+
+        const p4 = createElemWithText('p', author.company.catchPhrase);
+
+        const button = createElemWithText('button', 'Show Comments');
+
+        button.dataset.postId = post.id;
+
+        const section = await displayComments(post.id);
+
+        article.append(h2, p1, p2, p3, p4, button, section);
+
+        fragment.appendChild(article);
+
+    }
+
+    return fragment;
+
+}
+
+
+/*
 16. displayPosts
 a. Dependencies: createPosts, createElemWithText
 b. Is an async function
@@ -482,6 +577,23 @@ NOTE: This is the last group of functions. I call them â€œprocedural functionsâ€
 to pull the other functions together in a sequence of operations that allows the web app to
 function as it should. This means their sole purpose is to call dependencies with the correct data
 in the proper order.
+*/
+
+
+async function displayPosts(posts) {
+
+    const main = document.querySelector('main');
+
+    const element = posts && posts.length > 0 ? await createPosts(posts) : createElemWithText('p', 'Select an Employee to display their posts.', 'default-text');
+
+    main.appendChild(element);
+
+    return element;
+
+}
+
+
+/*
 17. toggleComments
 a. Dependencies: toggleCommentSection, toggleCommentButton
 b. Receives 2 parameters: (see addButtonListeners function description)
@@ -495,6 +607,24 @@ g. toggleCommentButton result is a button
 h. Return an array containing the section element returned from
 toggleCommentSection and the button element returned from
 toggleCommentButton: [section, button]
+*/
+
+function toggleComments(event, postId) {
+
+    if (!event || !postId) return;
+
+    event.target.listener = true;
+
+    const section = toggleCommentSection(postId);
+
+    const button = toggleCommentButton(postId);
+
+    return [section, button];
+
+}
+
+
+/*
 18. refreshPosts
 a. Dependencies: removeButtonListeners, deleteChildElements, displayPosts,
 addButtonListeners
@@ -510,6 +640,26 @@ j. Call addButtonListeners
 k. Result of addButtonListeners is the buttons returned from this function
 l. Return an array of the results from the functions called: [removeButtons, main,
 fragment, addButtons]
+*/
+
+async function refreshPosts(posts) {
+
+    if (!posts) return;
+
+    const removeButtons = removeButtonListeners();
+
+    const main = deleteChildElements(document.querySelector('main'));
+
+    const fragment = await displayPosts(posts);
+
+    const addButtons = addButtonListeners();
+
+    return [removeButtons, main, fragment, addButtons];
+
+}
+
+
+/*
 19. selectMenuChangeEventHandler
 a. Dependencies: getUserPosts, refreshPosts
 b. Should be an async function
@@ -523,6 +673,40 @@ i. Result is the refreshPostsArray
 j. Enables the select menu after results are received (disabled property)
 k. Return an array with the userId, posts and the array returned from refreshPosts:
 [userId, posts, refreshPostsArray]
+*/
+
+async function selectMenuChangeEventHandler(event) {
+
+  // If no event/parameter, return undefined (per spec/test)
+  if (!event) return;
+
+  // Support either an Event with .target or the element itself
+  const selectEl = 'target' in event ? event.target : event;
+
+  try {
+
+    if (selectEl) selectEl.disabled = true;
+
+    const userIdRaw = selectEl && 'value' in selectEl ? selectEl.value : undefined;
+
+    const userId = Number(userIdRaw) || 1;
+
+    const posts = await getUserPosts(userId);
+
+    const refreshPostsArray = await refreshPosts(posts);
+
+    return [userId, posts, refreshPostsArray];
+
+  } finally {
+
+    if (selectEl) selectEl.disabled = false;
+
+  }
+}
+
+
+
+/*
 20. initPage
 a. Dependencies: getUsers, populateSelectMenu
 b. Should be an async function
@@ -533,6 +717,21 @@ f. Passes the users JSON data to the populateSelectMenu function
 g. Result is the select element returned from populateSelectMenu
 h. Return an array with users JSON data from getUsers and the select element
 result from populateSelectMenu: [users, select]
+*/
+
+
+async function initPage() {
+
+    const users = await getUsers();
+
+    const select = populateSelectMenu(users);
+
+    return [users, select];
+
+}
+
+
+/*
 21. initApp
 a. Dependencies: initPage, selectMenuChangeEventHandler
 b. Call the initPage() function.
@@ -550,3 +749,17 @@ must apply it to call the script into action.
 3. Put initApp in the listener as the event handler function.
 4. This will call initApp after the DOM content has loaded and your app will be started.
 */
+
+function initApp() {
+
+    initPage();
+
+    const selectMenu = document.getElementById('selectMenu');
+
+    selectMenu.addEventListener('change', selectMenuChangeEventHandler);
+
+}
+
+
+// Call initApp when DOM content is loaded
+document.addEventListener('DOMContentLoaded', initApp);
